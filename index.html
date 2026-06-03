@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Electronics Fundamental Tracker</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --bg-page: #f3f4f6;
+            --bg-card: #ffffff;
+            --border-color: #e5e7eb;
+            --success: #059669;
+            --success-light: #ecfdf5;
+            --error: #dc2626;
+            --error-light: #fef2f2;
+            --hint-color: #d97706;
+            --hint-light: #fffbeb;
+            --radius: 12px;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 55px;
+            text-align: right;
+        }
+
+        .question-section {
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            width: 100%;
+            padding: 14px 16px;
+            text-align: left;
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        @media (hover: hover) {
+            .option-btn:not([disabled]):hover {
+                border-color: var(--primary);
+                background-color: var(--primary-light);
+            }
+        }
+
+        .option-btn[disabled] {
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background-color: var(--success-light) !important;
+            border-color: var(--success) !important;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--error-light) !important;
+            border-color: var(--error) !important;
+            color: var(--error);
+        }
+
+        .hint-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--hint-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            align-self: flex-start;
+        }
+
+        .hint-box {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            background-color: var(--hint-light);
+            border-left: 4px solid var(--hint-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #92400e;
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background-color: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            text-align: center; /* Center elements in the feedback box */
+        }
+
+        .image-container {
+            margin-bottom: 12px;
+        }
+
+        .feedback-img {
+            max-width: 150px; /* Limits size on mobile views */
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: none; /* Controlled by JavaScript */
+            margin: 0 auto;
+        }
+
+        .compliment-text {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            font-style: italic;
+            letter-spacing: -0.01em;
+        }
+
+        .explanation-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-main);
+            text-align: left;
+        }
+
+        .choice-explanation {
+            margin-top: 8px;
+            padding-left: 10px;
+            border-left: 3px solid var(--border-color);
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        .nav-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .prev-btn {
+            background-color: #e5e7eb;
+            color: var(--text-main);
+        }
+
+        .prev-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .next-btn {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .next-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .quiz-container { padding: 16px; border-radius: 8px; }
+            .option-btn { padding: 12px; font-size: 0.9rem; }
+            .nav-btn { padding: 12px 14px; font-size: 0.9rem; }
+            .feedback-img { max-width: 120px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="header">
+        <h1>Introduction to Electronics (35-Item Comprehensive Exam)</h1>
+        <div class="progress-container">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text" id="progressText">1 / 35</div>
+        </div>
+    </div>
+
+    <div class="question-section">
+        <div class="question-text" id="questionText">Loading question...</div>
+        <div class="options-list" id="optionsList"></div>
+        
+        <button class="hint-toggle-btn" id="hintToggleBtn" onclick="toggleHint()">💡 Show Hint</button>
+        <div class="hint-box" id="hintBox"></div>
+        
+        <div class="explanation-box" id="explanationBox">
+            <div class="image-container">
+                <img id="complimentImage" class="feedback-img" src="" alt="Feedback illustration">
+            </div>
+            <div class="compliment-text" id="complimentText"></div>
+            <div class="explanation-title" id="expTitle"></div>
+            <div id="expBody"></div>
+        </div>
+    </div>
+
+    <div class="nav-section">
+        <button class="nav-btn prev-btn" id="prevBtn" onclick="navigateQuestion(-1)">Previous</button>
+        <button class="nav-btn next-btn" id="nextBtn" onclick="navigateQuestion(1)" disabled>Next</button>
+    </div>
+</div>
+
+<script>
+    /* PASTE THE SAME 35-ITEM DATA ARRAY FROM THE PREVIOUS RESPONSE HERE */
+
+const quizData = [
+    {
+        question: "Which term describes the process of altering a silicon crystal's electrical properties by injecting donor or acceptor impurities?",
+        options: ["Rectification", "Doping", "Self-induction", "Amplification"],
+        correct: 1,
+        hint: "This procedure adds trace elements like phosphorus or boron to establish structural charge trends.",
+        explanations: ["Incorrect. Rectification is the process of converting alternating current (AC) into direct current (DC).", "Correct! Doping is the process of adding impurities to a silicon crystal to intentionally modify its free electron or hole density.", "Incorrect. Self-induction occurs when an inductor creates an opposing internal electromotive force as current varies.", "Incorrect. Amplification uses a small input signal to modulate and control a larger supply current output."]
+    },
+    {
+        question: "What distinct element classifies an n-type semiconductor from a p-type semiconductor?",
+        options: ["It uses boron as a primary acceptor impurity to generate positive holes.", "It uses phosphorus as a donor impurity to generate free negative charge carriers.", "It relies on two coils on a common core to balance polarity shifting.", "It behaves like an open switch under all forward-biased circuit variants."],
+        correct: 1,
+        hint: "Think about which impurity type donates extra negative electrons to the crystal lattice.",
+        explanations: ["Incorrect. Boron creates p-type materials by presenting hole vacancies.", "Correct! N-type semiconductors are created by adding donor impurities like phosphorus, which provide free negative charge carriers (electrons).", "Incorrect. Coils on a common core describe the construction of an electromagnetic transformer.", "Incorrect. Semiconductors do not inherently act as fixed open switches across all positive voltage changes."]
+    },
+    {
+        question: "When no external voltage is applied across a PN junction, what occurs inside the component interface zone?",
+        options: ["Electrons from the N-type side fill adjacent holes, forming a carrier-free depletion region.", "The primary winding isolates from the secondary winding by establishing an active Q-point.", "A continuous avalanche breakdown starts moving current backward.", "The configuration acts as an ideal closed switch with zero electrical opposition."],
+        correct: 0,
+        hint: "Look for the natural process where free carriers neutralize near the boundary line, creating a barrier zone.",
+        explanations: ["Correct! Free electrons naturally migrate across the junction to fill vacant holes, creating an intermediate area devoid of free carriers called the depletion region.", "Incorrect. Primary and secondary windings belong exclusively to transformers, not basic semiconductor PN junctions.", "Incorrect. Breakdown requires applying hundreds of volts in a reverse-bias orientation.", "Incorrect. Without an external bias, the unmanaged junction cannot act as an active closed switch."]
+    },
+    {
+        question: "Which type of diode is engineered to safely operate under reverse-breakdown criteria to supply stable reference voltages?",
+        options: ["Schottky Diode", "Light Emitting Diode (LED)", "Zener Diode", "PN Rectifier Diode"],
+        correct: 2,
+        hint: "This diode is widely used in power supply networks connected in parallel (shunt) with loads.",
+        explanations: ["Incorrect. Schottky diodes are optimized for low forward-voltage drops and high-frequency switching.", "Incorrect. LEDs are biased forward to emit light energy as current passes through the junction.", "Correct! Zener diodes are engineered to operate safely in reverse bias. Once the breakdown threshold is met, they maintain a stable voltage.", "Incorrect. Standard PN diodes are built to rectify alternating signals, but can be damaged if driven past their reverse breakdown rating."]
+    },
+    {
+        question: "Which mathematical formula correctly calculates the approximate peak-to-peak ripple voltage (Vr(pp)) in a filtered power supply circuit?",
+        options: ["Vr(pp) = Vp(rect) / (f * RL * C)", "Vr(pp) = Vp(rect) * [1 - (1 / (2 * f * RL * C))]", "Vr(pp) = r * VDC", "Vr(pp) = (Vp(sec) - 1.4v) * f"],
+        correct: 0,
+        hint: "The ripple voltage formula depends inversely on the product of the frequency, load resistance, and filter capacitance.",
+        explanations: ["Correct! The peak-to-peak ripple voltage is calculated using Vr(pp) = [1 / (f * RL * C)] * Vp(rect).", "Incorrect. This formula defines the average filtered direct current output voltage (VDC), not the peak-to-peak ripple variation.", "Incorrect. While the ripple factor equation is r = Vr(pp) / VDC, this alternative algebraic form isolates r, not the baseline raw component ripple calculation.", "Incorrect. This mixes parts of the peak rectified output voltage with a frequency multiplier."]
+    },
+    {
+        question: "What is the correct mathematical relationship for finding the primary-to-secondary voltage distribution across an ideal transformer?",
+        options: ["VS / VP = NS / NP", "VS * iS = VP * iP", "VS / VP = NP / NS", "VS = VP * (iP / iS)"],
+        correct: 0,
+        hint: "The voltage ratio of a transformer scales proportionally with its winding turns ratio.",
+        explanations: ["Correct! The transformer voltage ratio scales directly with its winding distribution: VS / VP = NS / NP.", "Incorrect. While VS * iS = VP * iP holds true for power equilibrium, it specifies current-power scaling rather than the basic voltage-turns relationship.", "Incorrect. This expresses an inverted relationship, implying voltage drops as winding count increases.", "Incorrect. This represents a current transformation derivation rather than the direct voltage-to-turn scaling system."]
+    },
+    {
+        question: "In practical diode modeling, what is the exact formula used to determine the Peak Inverse Voltage (PIV) rating across bridge rectifiers?",
+        options: ["PIV = Vp(out)", "PIV = Vp(out) + 0.7v", "PIV = Vp(sec) - 1.4v", "PIV = Vp(rect) / 2"],
+        correct: 1,
+        hint: "The practical model must account for the additional 0.7V silicon forward-bias diode drop across the non-conducting network pairs.",
+        explanations: ["Incorrect. PIV = Vp(out) applies exclusively to the ideal diode model where internal voltage drops are omitted.", "Correct! Under the practical model, the required PIV rating must account for the added diode barrier: PIV = Vp(out) + 0.7v.", "Incorrect. This expression calculates the peak output voltage (Vp(out)) of a bridge rectifier, not its inverse voltage constraint.", "Incorrect. This relates to center-tapped secondary calculations, not practical bridge inverse ratings."]
+    },
+    {
+        question: "A Bipolar Junction Transistor (BJT) is operating in 'Saturation Mode'. What behavior and voltage criteria define this condition?",
+        options: ["It acts like an open circuit where VB is less than both VC and VE.", "It acts like a short circuit where VB > VC and VB > VE.", "The collector current is proportional to base input current, and VC > VB > VE.", "Current flows backward from emitter to collector because VC < VB < VE."],
+        correct: 1,
+        hint: "Saturation represents the fully 'on' state of a transistor, where the base voltage drives both junctions into forward bias.",
+        explanations: ["Incorrect. This describes Cut-off mode, where the transistor acts as an open circuit and shuts off current flow.", "Correct! In Saturation, the transistor is fully turned 'on', acting like a short circuit between collector and emitter while satisfying VB > VC and VB > VE.", "Incorrect. This describes Active mode, which is primarily used for linear signal amplification.", "Incorrect. This describes Reverse-Active mode, where current flows in the opposite direction."]
+    },
+    {
+        question: "Which transistor bias circuit configuration provides excellent stability across temperature swings but requires both positive and negative power supplies?",
+        options: ["Fixed Bias", "Emitter Bias", "Voltage Divider Bias", "Collector Feedback Bias"],
+        correct: 1,
+        hint: "This circuit uses two distinct power supplies and fluctuates very little when replacing the transistor.",
+        explanations: ["Incorrect. Fixed Bias uses a two-resistor network that remains highly sensitive to temperature and beta variations.", "Correct! Emitter bias provides excellent stability against temperature and beta variances, but requires both positive and negative voltage rails.", "Incorrect. Voltage Divider bias is highly stable and independent of beta changes, but it operates using a single power supply.", "Incorrect. Collector Feedback bias achieves its stability by feedback from a single collector rail to the base circuit."]
+    },
+    {
+        question: "What is the baseline equation used to calculate the base input current (IB) within a transistor 'Fixed Bias' network layout?",
+        options: ["IB = (VCC - VBE) / RB", "IB = VTh / (RTh + (β + 1)RE)", "IB = (VCC - VBE) / [RB + (β + 1)RE]", "IB = (VCC - VBE) / [RF + β(RC + RE)]"],
+        correct: 0,
+        hint: "The fixed bias calculation relies entirely on the primary rail voltage, base-emitter drop, and a single base current-limiting resistor.",
+        explanations: ["Correct! For a Fixed Bias network, base current is isolated using IB = (VCC - VBE) / RB.", "Incorrect. This equation is used to calculate the base current in a Voltage Divider circuit configuration using Thevenin parameters.", "Incorrect. This formula is used to calculate the base current in an Emitter Bias configuration.", "Incorrect. This formula applies to a Collector Feedback bias network configuration."]
+    },
+    {
+        question: "What parameter does the ripple factor (r) evaluate in a rectified DC output?",
+        options: ["The efficiency of power dissipation", "The ratio of the ripple voltage component to the total DC voltage value", "The breakdown rating of the transformer insulation", "The tracking current inside the base region"],
+        correct: 1,
+        hint: "It acts as a measure of filter effectiveness by evaluating leftover AC variations.",
+        explanations: ["Incorrect. Power dissipation efficiency is tracked via general power coefficient rules.", "Correct! The ripple factor (r) mathematically determines the scale of alternating voltage remaining relative to the direct current level: r = Vr(pp) / VDC.", "Incorrect. Insulation metrics relate to environmental transformer maximums, not output signal ripple.", "Incorrect. Base tracking is governed by internal semiconductor transistor metrics."]
+    },
+    {
+        question: "Which diode model treats a forward-biased diode as a closed switch in series with a fixed 0.7V potential barrier?",
+        options: ["Ideal Model", "Practical Model", "Complete Model", "Exponential Shockley Model"],
+        correct: 1,
+        hint: "This model incorporates the barrier potential but ignores internal dynamic resistance.",
+        explanations: ["Incorrect. The ideal model ignores the 0.7V barrier entirely, treating the forward-biased diode as a perfect closed switch.", "Correct! The practical model includes the 0.7V internal potential barrier alongside a basic switch mechanism.", "Incorrect. The complete model also factors in the dynamic internal resistance (r'd) and reverse leakage characteristics.", "Incorrect. The Shockley equation describes the logarithmic curvature of the junction mathematically, not through a discrete switch circuit layout."]
+    },
+    {
+        question: "Which component configuration defines a basic Half-Wave Rectifier circuit layout?",
+        options: ["Four interlocking diodes connected in a loop bridge matrix", "A single diode in series with a load resistor connected across an AC source", "Two center-tapped secondary coils feeding a common bypass filter", "A parallel arrangement of Zener diodes oriented backward"],
+        correct: 1,
+        hint: "This configuration suppresses half of the incoming alternating waveform by passing current through a single path element.",
+        explanations: ["Incorrect. Loop matrix structures with four components form full-wave bridge rectifiers.", "Correct! Half-wave units place a single primary diode in line with the direct load line to block reverse currents.", "Incorrect. Center-tapped setups require two diodes and an interleaved grounding transformer winding.", "Incorrect. Shunt Zeners act as voltage reference limits rather than traditional half-wave rectifying stages."]
+    },
+    {
+        question: "What is the primary function of a step-down transformer in linear power supply entry stages?",
+        options: ["To convert direct current into high-frequency alternating oscillations", "To reduce the high mains input voltage to a lower, safer operational AC level", "To act as a high-pass frequency filter for voltage surges", "To balance the collector and emitter currents in a BJT network"],
+        correct: 1,
+        hint: "It scales incoming high line voltage down via its primary-to-secondary turns distribution.",
+        explanations: ["Incorrect. Transformers operate on alternating current and cannot convert DC signals into AC waves.", "Correct! A step-down transformer scales high input mains voltage to a lower AC output level based on the winding ratio.", "Incorrect. Inductive components act natively as low-pass filters, not high-pass networks.", "Incorrect. Transistor base balancing is accomplished via biasing resistors, not input power transformers."]
+    },
+    {
+        question: "Under the complete diode model, what additional factor is added to a forward-biased junction beyond the 0.7V barrier potential?",
+        options: ["An internal dynamic resistance (r'd)", "An infinite reverse isolation path", "An external bias current source", "A primary-to-secondary turns-ratio multiplier"],
+        correct: 0,
+        hint: "This element causes the terminal voltage across the diode to rise slightly as current increases.",
+        explanations: ["Correct! The complete diode model incorporates the internal dynamic resistance (r'd) in series with the 0.7V barrier.", "Incorrect. Reverse isolation is finite under the complete model due to parallel leakage resistance.", "Incorrect. Bias current originates from external power sources, not the internal diode structure.", "Incorrect. Turns ratios belong exclusively to magnetic transformers."]
+    },
+    {
+        question: "What represents the theoretical efficiency or average DC value (VAVG) of an unfiltered half-wave rectified waveform?",
+        options: ["VAVG = Vp / π", "VAVG = 2Vp / π", "VAVG = Vp / 2", "VAVG = Vp * 0.707"],
+        correct: 0,
+        hint: "Since it conducts for only one half-cycle, its average value is half that of a full-wave rectified signal.",
+        explanations: ["Correct! An unfiltered half-wave output yields an average DC voltage equal to Vp / π.", "Incorrect. Vavg = 2Vp / π defines the output value for an unfiltered full-wave rectifier layout.", "Incorrect. Vp / 2 describes generic root-mean-square dynamics for specific asymmetric pulses.", "Incorrect. Multiplying by 0.707 determines the effective RMS value of a complete sinusoidal wave."]
+    },
+    {
+        question: "What mathematical expression represents the average direct current voltage output (VDC) of a filtered rectifier system?",
+        options: ["VDC = [1 - (1 / (2 * f * RL * C))] * Vp(rect)", "VDC = Vp(rect) / (f * RL * C)", "VDC = 2 * Vp(sec)", "VDC = Vp(out) + 0.7v"],
+        correct: 0,
+        hint: "The average DC voltage equals the peak rectified voltage minus half of the peak-to-peak ripple voltage.",
+        explanations: ["Correct! The average direct current voltage value tracks along the charging midline using VDC = [1 - (1 / (2 * f * RL * C))] * Vp(rect).", "Incorrect. This formula defines the peak-to-peak ripple voltage value itself.", "Incorrect. This represents the total raw peak secondary voltage across full secondary spans.", "Incorrect. This matches practical bridge inverse peak voltage equations."]
+    },
+    {
+        question: "When a PN junction is reverse-biased, how does the width of its internal depletion region change?",
+        options: ["It widens because free carriers are pulled away from the junction interface.", "It narrows until it vanishes completely.", "It remains completely fixed regardless of the applied voltage.", "It begins oscillating rapidly between large and small widths."],
+        correct: 0,
+        hint: "The external negative terminal pulls holes away from the junction, while the positive terminal pulls electrons away.",
+        explanations: ["Correct! Reverse biasing pulls majority carriers away from the junction boundary, widening the non-conducting depletion region.", "Incorrect. The depletion region narrows under forward bias, not reverse bias.", "Incorrect. The depletion width is highly sensitive to external electrical field changes.", "Incorrect. The width remains stable at a given DC reverse voltage rather than oscillating."]
+    },
+    {
+        question: "Which configuration defines a Full-Wave Center-Tapped rectifier network?",
+        options: ["A four-diode bridge network with a single secondary winding", "Two diodes combined with a center-grounded transformer secondary winding", "A single diode tied directly to a voltage divider node", "An inductor-input filtering stage coupled with an adjustable shunt resistor"],
+        correct: 1,
+        hint: "This design splits the secondary voltage using a center tap, requiring only two rectifying elements.",
+        explanations: ["Incorrect. Four-diode configurations form bridge rectifiers that do not require a center-tapped transformer.", "Correct! Center-tapped configurations route current through two alternating diodes relative to a center-grounded reference node.", "Incorrect. Single-diode layouts can only form half-wave rectifiers.", "Incorrect. Inductor stages serve as filtering components rather than active full-wave rectification networks."]
+    },
+    {
+        question: "In an ideal transformer layout, how does the current ratio relate to the primary-to-secondary turns ratio?",
+        options: ["iS / iP = NP / NS", "iS / iP = NS / NP", "iS * iP = NS * NP", "iS / iP = (NS / NP) ^ 2"],
+        correct: 0,
+        hint: "To maintain constant power across an ideal transformer, current must scale inversely with the turns ratio.",
+        explanations: ["Correct! Current scales inversely with the turns ratio to preserve power equilibrium: iS / iP = NP / NS.", "Incorrect. This defines direct proportional scaling, which applies to voltage rather than current.", "Incorrect. This product equation does not preserve the inverse proportionality required for transformer current scaling.", "Incorrect. Squared tracking parameters apply to impedance matching calculations."]
+    },
+    {
+        question: "What physical mechanism causes the abrupt increase in reverse current within a standard diode when the Zener breakdown threshold is reached?",
+        options: ["High internal electric fields pull valence electrons directly out of their covalent bonds.", "The depletion region collapses into a forward-conducting short circuit.", "The device begins emitting photons that generate extra holes.", "The primary winding becomes shorted to the secondary winding frame."],
+        correct: 0,
+        hint: "Zener breakdown occurs in heavily doped junctions when strong internal electric fields rupture atomic bonds.",
+        explanations: ["Correct! Zener breakdown occurs when intense internal electric fields pull valence electrons directly out of their bonds, creating an abrupt surge in reverse current.", "Incorrect. The depletion region does not forward-bias during reverse breakdown.", "Incorrect. Photon emission is a characteristic of LEDs, not the mechanism behind Zener breakdown.", "Incorrect. Transformer winding faults are unrelated to internal semiconductor junction physics."]
+    },
+    {
+        question: "What is the required current status across the base-emitter and base-collector junctions for a BJT to operate in its linear 'Active Mode'?",
+        options: ["Base-emitter is forward-biased; base-collector is reverse-biased.", "Both junctions are forward-biased simultaneously.", "Both junctions are reverse-biased simultaneously.", "Base-emitter is reverse-biased; base-collector is forward-biased."],
+        correct: 0,
+        hint: "This configuration allows the base current to control a proportional current flowing through the collector.",
+        explanations: ["Correct! Active mode operation requires a forward-biased base-emitter junction and a reverse-biased base-collector junction.", "Incorrect. Driving both junctions into forward bias causes the transistor to enter saturation mode.", "Incorrect. Biasing both junctions in reverse cuts off all current flow through the transistor.", "Incorrect. This describes the inverted mode of operation, which yields poor current gain."]
+    },
+    {
+        question: "Which basic equation relates the collector current (iC) to the base input current (iB) using the transistor current gain parameter (β)?",
+        options: ["iC = β * iB", "iB = β * iC", "iC = iB + iE", "β = iE / iC"],
+        correct: 0,
+        hint: "The current gain parameter acts as a direct multiplier for the small current entering the base terminal.",
+        explanations: ["Correct! Collector current is directly proportional to base current scaled by the gain factor: iC = β * iB.", "Incorrect. This inverts the relationship, implying the base current is larger than the collector current.", "Incorrect. Emitter current is the sum of the base and collector currents: iE = iC + iB.", "Incorrect. Beta is defined as the ratio of collector current to base current, not emitter current to collector current."]
+    },
+    {
+        question: "What mathematical expression defines the total emitter current (iE) as a combination of the other internal BJT currents?",
+        options: ["iE = iC + iB", "iE = iC - iB", "iE = β * iB", "iE = iC / β"],
+        correct: 0,
+        hint: "According to Kirchhoff's Current Law, all current leaving the transistor via the emitter must equal the sum of the entering currents.",
+        explanations: ["Correct! The total emitter current is the exact sum of the collector and base currents: iE = iC + iB.", "Incorrect. Subtraction does not satisfy Kirchhoff's Current Law for standard NPN or PNP configurations.", "Incorrect. This defines the collector current calculation using beta, not the total emitter current.", "Incorrect. This isolates base current equivalence dynamics rather than summing the internal current paths."]
+    },
+    {
+        question: "In a 'Voltage Divider Bias' circuit configuration, what expression is used to calculate the base voltage (VB) when using the simplified approximate analysis method?",
+        options: ["VB = [R2 / (R1 + R2)] * VCC", "VB = VCC - (iC * RC)", "VB = VBE + (iE * RE)", "VB = [R1 / (R1 + R2)] * VCC"],
+        correct: 0,
+        hint: "The approximate method treats the two voltage-divider resistors as a basic unloaded voltage divider across VCC.",
+        explanations: ["Correct! The approximate method determines the base voltage using the standard voltage divider ratio: VB = [R2 / (R1 + R2)] * VCC.", "Incorrect. This equation calculates the collector-to-ground voltage (VC), not the base voltage.", "Incorrect. This equation sums the base-emitter drop and emitter resistor drop to find the base voltage, which is used in exact analysis configurations.", "Incorrect. This formula incorrectly places the upper resistor (R1) in the numerator of the divider ratio."]
+    },
+    {
+        question: "What is the defining formula for calculating the Thevenin equivalent resistance (RTh) when performing an exact analysis on a Voltage Divider Bias network?",
+        options: ["RTh = (R1 * R2) / (R1 + R2)", "RTh = R1 + R2", "RTh = R1 / R2", "RTh = RC + RE"],
+        correct: 0,
+        hint: "Finding the Thevenin resistance involves evaluating the two voltage-divider resistors in parallel from the base node.",
+        explanations: ["Correct! The Thevenin equivalent resistance is the parallel combination of the two divider resistors: RTh = (R1 * R2) / (R1 + R2).", "Incorrect. This represents a series combination of the resistors rather than their parallel equivalent.", "Incorrect. This expresses a basic ratio rather than a parallel equivalent resistance value.", "Incorrect. Collector and emitter resistors are part of the output loop and are not included in the base circuit's Thevenin equivalent resistance."]
+    },
+    {
+        question: "Which transistor bias network configuration features a feedback path from the collector terminal back to the base to stabilize the operating point?",
+        options: ["Collector Feedback Bias", "Fixed Bias", "Two-Supply Emitter Bias", "Unbiased Common Emitter Matrix"],
+        correct: 0,
+        hint: "This layout connects the base resistor directly to the collector terminal instead of the VCC supply rail.",
+        explanations: ["Correct! Collector Feedback Bias routes the base resistor from the collector terminal, automatically stabilizing the operating point via negative feedback.", "Incorrect. Fixed bias provides no feedback path because its base resistor connects directly to the VCC supply rail.", "Incorrect. Emitter bias achieves stability using an emitter resistor and dual power supply rails.", "Incorrect. Matrix configurations are generalized mathematical modeling terms rather than discrete bias circuit layouts."]
+    },
+    {
+        question: "What equation isolates the base current (IB) in a 'Collector Feedback Bias' network layout?",
+        options: ["IB = (VCC - VBE) / [RF + β(RC + RE)]", "IB = (VCC - VBE) / RB", "IB = VTh / (RTh + β * RE)", "IB = (VCC - VBE) / [RB + (β + 1)RE]"],
+        correct: 0,
+        hint: "The denominator must account for both the base feedback resistor and the collector resistor scaled by the transistor gain factor.",
+        explanations: ["Correct! The base current in a collector feedback loop is calculated using IB = (VCC - VBE) / [RF + β(RC + RE)].", "Incorrect. This formula applies exclusively to a standard Fixed Bias circuit layout.", "Incorrect. This represents a partial derivation for a voltage divider network rather than a collector feedback configuration.", "Incorrect. This formula is used to calculate the base current in an Emitter Bias network layout."]
+    },
+    {
+        question: "What occurs to the operating point (Q-point) of a bias circuit if its configuration is highly dependent on changes in the transistor's current gain (β)?",
+        options: ["The Q-point shifts along the load line when temperature changes or when the transistor is replaced.", "The Q-point remains completely locked in the center of the active region.", "The circuit automatically switches off to enter cut-off mode.", "The collector current drops immediately to zero."],
+        correct: 0,
+        hint: "Transistor beta values vary significantly across individual components and with temperature fluctuations.",
+        explanations: ["Correct! If a circuit is beta-dependent, temperature changes or swapping the transistor will cause its Q-point to shift along the load line.", "Incorrect. Q-point stability requires a bias configuration that is independent of beta variations.", "Incorrect. Beta variations shift the operating point rather than triggering an automatic shutdown into cut-off mode.", "Incorrect. Collector current fluctuates with beta shifts rather than dropping immediately to zero."]
+    },
+    {
+        question: "Which parameter describes the ratio of the collector current to the emitter current in a BJT?",
+        options: ["Alpha (α)", "Beta (β)", "Thevenin Coefficient", "Ripple Factor"],
+        correct: 0,
+        hint: "This value is always slightly less than 1.0 because the emitter current includes a small base current component.",
+        explanations: ["Correct! Alpha (α) is defined as the ratio of collector current to emitter current: α = iC / iE.", "Incorrect. Beta is the ratio of collector current to base current, yielding a value that is typically much greater than 1.0.", "Incorrect. Thevenin coefficients represent equivalent network parameters rather than internal transistor current gains.", "Incorrect. The ripple factor measures residual AC variations in filtered power supply outputs."]
+    },
+    {
+        question: "What is the core purpose of a filter capacitor connected across the load in a rectifier power supply circuit?",
+        options: ["To smooth out rectified voltage variations by storing and discharging electrical energy.", "To limit the maximum alternating current entering the primary winding.", "To step down high voltage levels to low voltage references.", "To drive the transistor operating point directly into saturation mode."],
+        correct: 0,
+        hint: "The capacitor charges rapidly at the peak of the rectified waveform and discharges slowly through the load when the voltage drops.",
+        explanations: ["Correct! Filter capacitors smooth the rectified AC waveform into a steadier DC output by storing and discharging energy.", "Incorrect. Capacitors do not limit input current to the primary transformer winding.", "Incorrect. Voltage scaling is accomplished by the transformer turns ratio, not a filter capacitor.", "Incorrect. Power supply filtering capacitors are unrelated to biasing transistors into saturation mode."]
+    },
+    {
+        question: "What component is used to construct a basic Full-Wave Bridge Rectifier circuit?",
+        options: ["A four-diode loop bridge network", "A center-tapped transformer with two diodes", "A single diode connected in series with an inductor", "A single Zener diode connected in parallel with a bypass capacitor"],
+        correct: 0,
+        hint: "This rectifier layout uses four diodes arranged in a bridge matrix to conduct current during both half-cycles without a center tap.",
+        explanations: ["Correct! A full-wave bridge rectifier uses four diodes arranged in a loop matrix to provide full-wave rectification.", "Incorrect. This describes a center-tapped full-wave rectifier layout, which uses only two diodes.", "Incorrect. Single-diode configurations form half-wave rectifiers.", "Incorrect. Parallel Zener-capacitor configurations act as voltage regulators rather than full-wave rectifiers."]
+    },
+    {
+        question: "In an ideal diode model, how is a reverse-biased diode treated in circuit calculations?",
+        options: ["As a perfect open switch with infinite resistance.", "As a perfect closed switch with zero resistance.", "As a fixed 0.7V voltage source.", "As a variable dynamic resistor."],
+        correct: 0,
+        hint: "The ideal model ignores all secondary effects, treating the reverse-biased junction as a perfect insulator.",
+        explanations: ["Correct! The ideal model treats a reverse-biased diode as a perfect open switch that blocks all current flow.", "Incorrect. A forward-biased ideal diode is treated as a closed switch.", "Incorrect. The 0.7V barrier potential is factored into the practical and complete models, not the ideal model.", "Incorrect. Variable dynamic resistance is a characteristic of the complete model under forward-bias conditions."]
+    },
+    {
+        question: "What is the correct mathematical formula for isolating the base current (IB) in a 'Two-Supply Emitter Bias' configuration?",
+        options: ["IB = (VEE - VBE) / [RB + (β + 1)RE]", "IB = (VCC - VBE) / RB", "IB = VTh / (RTh + β * RE)", "IB = (VCC - VBE) / [RF + β * RC]"],
+        correct: 0,
+        hint: "This configuration utilizes the negative emitter supply voltage (VEE) to set the base input current.",
+        explanations: ["Correct! Emitter bias configurations calculate base current using the relationship IB = (VEE - VBE) / [RB + (β + 1)RE].", "Incorrect. This formula is used to calculate base current in a standard Fixed Bias circuit layout.", "Incorrect. This formula represents an approximate analysis step for voltage divider bias networks.", "Incorrect. This formula is used to calculate base current in a collector feedback loop that omits an emitter resistor."]
+    },
+    {
+        question: "Which operating state occurs when a BJT's base-emitter junction is reverse-biased, preventing any current flow through the collector circuit?",
+        options: ["Cut-off Mode", "Saturation Mode", "Active Mode", "Breakdown Mode"],
+        correct: 0,
+        hint: "In this mode, the transistor acts like an open switch between its collector and emitter terminals.",
+        explanations: ["Correct! In Cut-off mode, the base-emitter junction is reverse-biased, turning the transistor 'off' so that it acts like an open circuit.", "Incorrect. Saturation mode represents the fully 'on' state of a transistor where current flow is maximized.", "Incorrect. Active mode is used for linear signal amplification, where collector current is proportional to base current.", "Incorrect. Breakdown mode occurs when excessive voltage damages the semiconductor junctions."]
+    }
+];
+
+    let currentIdx = 0;
+    let selectedAnswers = new Array(quizData.length).fill(null);
+
+    const questionText = document.getElementById("questionText");
+    const optionsList = document.getElementById("optionsList");
+    const hintBox = document.getElementById("hintBox");
+    const hintToggleBtn = document.getElementById("hintToggleBtn");
+    const explanationBox = document.getElementById("explanationBox");
+    const complimentImage = document.getElementById("complimentImage");
+    const complimentText = document.getElementById("complimentText");
+    const expTitle = document.getElementById("expTitle");
+    const expBody = document.getElementById("expBody");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+
+    function loadQuestion() {
+        const currentQ = quizData[currentIdx];
+        hintBox.style.display = "none";
+        hintToggleBtn.innerText = "💡 Show Hint";
+        explanationBox.style.display = "none";
+        complimentImage.style.display = "none"; // Hide image initially
+        
+        questionText.innerText = `${currentIdx + 1}. ${currentQ.question}`;
+        hintBox.innerText = currentQ.hint;
+        
+        optionsList.innerHTML = "";
+        currentQ.options.forEach((opt, index) => {
+            const button = document.createElement("button");
+            button.className = "option-btn";
+            button.innerText = opt;
+            button.onclick = () => handleSelectAnswer(index);
+            optionsList.appendChild(button);
+        });
+
+        prevBtn.disabled = currentIdx === 0;
+        nextBtn.disabled = selectedAnswers[currentIdx] === null;
+
+        if (selectedAnswers[currentIdx] !== null) {
+            revealAnswerUi(selectedAnswers[currentIdx]);
+        }
+        updateProgress();
+    }
+
+    function handleSelectAnswer(chosenIdx) {
+        if (selectedAnswers[currentIdx] !== null) return;
+        selectedAnswers[currentIdx] = chosenIdx;
+        revealAnswerUi(chosenIdx);
+        nextBtn.disabled = false;
+    }
+
+    function revealAnswerUi(chosenIdx) {
+        const currentQ = quizData[currentIdx];
+        const buttons = optionsList.getElementsByClassName("option-btn");
+        
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].disabled = true;
+            if (i === currentQ.correct) {
+                buttons[i].classList.add("correct");
+            } else if (i === chosenIdx) {
+                buttons[i].classList.add("incorrect");
+            }
+        }
+
+        const isCorrect = chosenIdx === currentQ.correct;
+        
+        if (isCorrect) {
+            complimentText.innerText = "Nice one, Love";
+            complimentText.style.color = "var(--success)";
+            // CHANGE THIS TO YOUR CORNER-IMAGE URL/PATH:
+            complimentImage.src = "https://cdn.corenexis.com/files/c/6866282720.png";
+        } else {
+            complimentText.innerText = "No worries, Love";
+            complimentText.style.color = "var(--error)";
+            // CHANGE THIS TO YOUR WRONG-IMAGE URL/PATH:
+            complimentImage.src = "https://cdn.corenexis.com/files/c/6815685720.png";
+        }
+        
+        complimentImage.style.display = "block"; // Make the image visible
+
+        expTitle.innerText = isCorrect ? "✅ Correct Answer Explanation:" : "❌ Incorrect Answer Explanation:";
+        expTitle.style.color = isCorrect ? "var(--success)" : "var(--error)";
+
+        let explanationsHtml = "";
+        currentQ.options.forEach((_, idx) => {
+            explanationsHtml += `<div class="choice-explanation">${currentQ.explanations[idx]}</div>`;
+        });
+        expBody.innerHTML = explanationsHtml;
+        explanationBox.style.display = "block";
+    }
+
+    function toggleHint() {
+        if (hintBox.style.display === "none") {
+            hintBox.style.display = "block";
+            hintToggleBtn.innerText = "🙈 Hide Hint";
+        } else {
+            hintBox.style.display = "none";
+            hintToggleBtn.innerText = "💡 Show Hint";
+        }
+    }
+
+    function navigateQuestion(step) {
+        currentIdx += step;
+        if (currentIdx >= 0 && currentIdx < quizData.length) {
+            loadQuestion();
+        } else {
+            currentIdx -= step;
+        }
+    }
+
+    function updateProgress() {
+        const percent = ((currentIdx + 1) / quizData.length) * 100;
+        progressFill.style.width = `${percent}%`;
+        progressText.innerText = `${currentIdx + 1} / ${quizData.length}`;
+    }
+
+    window.onload = loadQuestion;
+</script>
+</body>
+</html>
